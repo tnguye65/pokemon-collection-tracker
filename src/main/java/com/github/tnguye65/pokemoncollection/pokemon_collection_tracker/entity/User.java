@@ -1,6 +1,7 @@
 package com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.entity;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -21,21 +22,21 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 @Entity
-@Table(name="users")
+@Table(name = "users")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@EqualsAndHashCode(of = {"userId", "username", "email"})
+@EqualsAndHashCode(of = { "userId", "username", "email" })
 @ToString(exclude = "password")
 public class User {
-	
-	@Column(name="userId")
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer userId;
-	
-	@NotBlank(message = "Username is required")
+
+    @Column(name = "user_id")
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID userId;
+
+    @NotBlank(message = "Username is required")
     @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
     @Column(name = "username", unique = true, nullable = false, length = 50)
     private String username;
@@ -55,19 +56,20 @@ public class User {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-	
+
     /**
      * Constructor for user registration (without ID and timestamps)
+     * 
      * @param username the username
-     * @param email the email address
+     * @param email    the email address
      * @param password the password (will be encoded by service layer)
      */
-	public User(String username, String email, String password) {
-		this.username = username;
-		this.email = email;
-		this.password = password;
-	}
-    
+    public User(String username, String email, String password) {
+        this.username = username;
+        this.email = email;
+        this.password = password;
+    }
+
     /**
      * JPA lifecycle method to set timestamps before persisting
      */
@@ -76,7 +78,7 @@ public class User {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
-    
+
     /**
      * JPA lifecycle method to update timestamp before updating
      */
@@ -84,5 +86,4 @@ public class User {
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
-    
 }

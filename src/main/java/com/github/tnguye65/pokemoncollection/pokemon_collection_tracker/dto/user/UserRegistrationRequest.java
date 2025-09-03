@@ -1,9 +1,12 @@
-package com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.dto;
+package com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.dto.user;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
