@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -42,13 +43,14 @@ public class UserCollectionController {
     @Autowired
     private PokemonApiService pokemonApiService;
 
-    /**
-     * Add card to user's collection
-     */
     @PostMapping
     public ResponseEntity<UserCollectionResponse> addCardToCollection(
             @PathVariable UUID userId,
+            @RequestHeader("X-User-ID") UUID authenticatedUserId,
             @Valid @RequestBody AddToCollectionRequest request) {
+
+        ResponseEntity<UserCollectionResponse> authCheck = checkAuthorization(userId, authenticatedUserId);
+        if (authCheck != null) return authCheck;
 
         log.info("POST /api/users/{}/collection - Adding card {}", userId, request.getCardId());
 
@@ -57,9 +59,7 @@ public class UserCollectionController {
                     userId, request.getCardId(), request.getVariant(),
                     request.getQuantity(), request.getCondition(), request.getNotes());
 
-            // Fetch card details for response
             TCGdexCard cardDetails = pokemonApiService.getCard(request.getCardId());
-
             UserCollectionResponse response = mapToResponse(savedCollection, cardDetails);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
@@ -72,11 +72,14 @@ public class UserCollectionController {
         }
     }
 
-    /**
-     * Get user's complete collection
-     */
     @GetMapping
-    public ResponseEntity<List<UserCollectionResponse>> getUserCollection(@PathVariable UUID userId) {
+    public ResponseEntity<List<UserCollectionResponse>> getUserCollection(
+            @PathVariable UUID userId,
+            @RequestHeader("X-User-ID") UUID authenticatedUserId) {
+        
+        ResponseEntity<List<UserCollectionResponse>> authCheck = checkAuthorization(userId, authenticatedUserId);
+        if (authCheck != null) return authCheck;
+
         log.info("GET /api/users/{}/collection", userId);
 
         try {
@@ -93,7 +96,6 @@ public class UserCollectionController {
                     responses.add(mapToResponse(collection, cardDetails));
                 } catch (Exception e) {
                     log.warn("Could not fetch details for card {}: {}", collection.getCardId(), e.getMessage());
-                    // Add response without card details
                     responses.add(mapToResponse(collection, null));
                 }
             }
@@ -109,14 +111,15 @@ public class UserCollectionController {
         }
     }
 
-    /**
-     * Update collection item
-     */
     @PutMapping("/{collectionId}")
     public ResponseEntity<UserCollectionResponse> updateCollectionItem(
             @PathVariable UUID userId,
             @PathVariable Long collectionId,
+            @RequestHeader("X-User-ID") UUID authenticatedUserId,
             @Valid @RequestBody UpdateCollectionItemRequest request) {
+
+        ResponseEntity<UserCollectionResponse> authCheck = checkAuthorization(userId, authenticatedUserId);
+        if (authCheck != null) return authCheck;
 
         log.info("PUT /api/users/{}/collection/{}", userId, collectionId);
 
@@ -139,13 +142,14 @@ public class UserCollectionController {
         }
     }
 
-    /**
-     * Remove card from collection
-     */
     @DeleteMapping("/{collectionId}")
     public ResponseEntity<Void> removeCardFromCollection(
             @PathVariable UUID userId,
-            @PathVariable Long collectionId) {
+            @PathVariable Long collectionId,
+            @RequestHeader("X-User-ID") UUID authenticatedUserId) {
+
+        ResponseEntity<Void> authCheck = checkAuthorization(userId, authenticatedUserId);
+        if (authCheck != null) return authCheck;
 
         log.info("DELETE /api/users/{}/collection/{}", userId, collectionId);
 
@@ -162,11 +166,14 @@ public class UserCollectionController {
         }
     }
 
-    /**
-     * Get collection statistics
-     */
     @GetMapping("/stats")
-    public ResponseEntity<UserCollectionService.CollectionStats> getCollectionStats(@PathVariable UUID userId) {
+    public ResponseEntity<UserCollectionService.CollectionStats> getCollectionStats(
+            @PathVariable UUID userId,
+            @RequestHeader("X-User-ID") UUID authenticatedUserId) {
+        
+        ResponseEntity<UserCollectionService.CollectionStats> authCheck = checkAuthorization(userId, authenticatedUserId);
+        if (authCheck != null) return authCheck;
+
         log.info("GET /api/users/{}/collection/stats", userId);
 
         try {
@@ -182,9 +189,16 @@ public class UserCollectionController {
         }
     }
 
-    /**
-     * Helper method to map entity to response DTO
-     */
+    // Authorization helper method
+    @SuppressWarnings("unchecked")
+    private <T> ResponseEntity<T> checkAuthorization(UUID requestedUserId, UUID authenticatedUserId) {
+        if (!requestedUserId.equals(authenticatedUserId)) {
+            log.warn("User {} attempted to access collection of user {}", authenticatedUserId, requestedUserId);
+            return (ResponseEntity<T>) ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        return null; // Authorization passed
+    }
+
     private UserCollectionResponse mapToResponse(UserCollection collection, TCGdexCard cardDetails) {
         return new UserCollectionResponse(
                 collection.getId(),

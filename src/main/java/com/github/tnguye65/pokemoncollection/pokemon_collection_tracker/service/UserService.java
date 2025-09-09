@@ -3,7 +3,6 @@ package com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.service
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.entity.User;
@@ -15,12 +14,12 @@ import jakarta.transaction.Transactional;
 public class UserService {
 	
 	private final UserRepository userRepository;
-	private final PasswordEncoder passwordEncoder;
+	//private final PasswordEncoder passwordEncoder;
 	
 	@Autowired
-	public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+	public UserService(UserRepository userRepository) {//, PasswordEncoder passwordEncoder) {
 		this.userRepository = userRepository;
-		this.passwordEncoder = passwordEncoder;
+		//this.passwordEncoder = passwordEncoder;
 	}
 	
 	@Transactional
@@ -47,7 +46,7 @@ public class UserService {
 	    }
 	    
 	    // 4. Encode the password (you'll need to inject PasswordEncoder)
-	    String encodedPassword = passwordEncoder.encode(password);
+	    String encodedPassword = password;//passwordEncoder.encode(password);
 	    
 	    // 5. Create new user object
 	    User newUser = new User(username, email, encodedPassword);
