@@ -17,14 +17,14 @@ import com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.service.
 @RestController
 @RequestMapping("/api/cards")
 public class CardController {
-    
+
     private final PokemonApiService pokemonApiService;
-    
+
     @Autowired
     public CardController(PokemonApiService pokemonApiService) {
         this.pokemonApiService = pokemonApiService;
     }
-    
+
     // Test endpoint - search cards by name
     @GetMapping("/search")
     public ResponseEntity<List<TCGdexCardBrief>> searchCards(@RequestParam String name) {
@@ -35,7 +35,7 @@ public class CardController {
             return ResponseEntity.status(500).build();
         }
     }
-    
+
     // Test endpoint - get specific card
     @GetMapping("/{cardId}")
     public ResponseEntity<TCGdexCard> getCard(@PathVariable String cardId) {

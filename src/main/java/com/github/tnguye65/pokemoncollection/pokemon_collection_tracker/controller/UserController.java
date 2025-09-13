@@ -17,26 +17,25 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
-	
+
 	private final UserService userService;
-	
+
 	@Autowired
 	public UserController(UserService userService) {
 		this.userService = userService;
-	}	
-	
+	}
+
 	@PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody UserRegistrationRequest request) {
+	public ResponseEntity<?> register(@Valid @RequestBody UserRegistrationRequest request) {
 		try {
-	        User registeredUser = userService.registerUser(
-	            request.getUsername(), 
-	            request.getEmail(), 
-	            request.getPassword()
-	        );
-	        return ResponseEntity.status(HttpStatus.CREATED).body(registeredUser);
-	    } catch (IllegalArgumentException e) {
-	        return ResponseEntity.badRequest().body(e.getMessage());
-	    }
-    }
-	
+			User registeredUser = userService.registerUser(
+					request.getUsername(),
+					request.getEmail(),
+					request.getPassword());
+			return ResponseEntity.status(HttpStatus.CREATED).body(registeredUser);
+		} catch (IllegalArgumentException e) {
+			return ResponseEntity.badRequest().body(e.getMessage());
+		}
+	}
+
 }
