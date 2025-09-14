@@ -31,15 +31,15 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authz -> authz
                         // Public endpoints - no authentication required
                         .requestMatchers("/api/auth/**").permitAll() // Login, register endpoints
+                        .requestMatchers("/api/pokemon/**").permitAll()
                         .requestMatchers("/api/public/**").permitAll() // Any public endpoints
                         .requestMatchers("/h2-console/**").permitAll() // H2 database console (remove in production)
                         // .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll() // Swagger
                         // docs (if using)
 
                         // Protected endpoints - authentication required
-                        .requestMatchers("/api/pokemon/**").authenticated()
                         .requestMatchers("/api/collection/**").authenticated()
-                        .requestMatchers("/api/user/**").authenticated()
+                        .requestMatchers("/api/users/**").authenticated()
 
                         // All other requests require authentication
                         .anyRequest().authenticated())
