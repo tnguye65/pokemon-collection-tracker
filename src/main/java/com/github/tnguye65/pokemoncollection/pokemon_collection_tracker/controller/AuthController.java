@@ -1,5 +1,7 @@
 package com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.config.JwtAuthenticationFilter;
 import com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.config.JwtService;
 import com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.entity.User;
 import com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.entity.UserDetailsImpl;
@@ -30,6 +33,8 @@ public class AuthController {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
         try {
@@ -45,6 +50,8 @@ public class AuthController {
             // Generate JWT token
             String token = jwtService.generateToken(userDetails);
 
+            log.info("User {} logged in successfully", userDetails.getUsername());
+
             // Return success response
             return ResponseEntity.ok(new AuthResponse(
                     token,
@@ -53,6 +60,7 @@ public class AuthController {
                     "Login successful"));
 
         } catch (AuthenticationException e) {
+            log.warn("Failed login attempt for email: {}", request.getEmail());
             return ResponseEntity.badRequest()
                     .body(new ErrorResponse("Invalid email or password"));
         }
@@ -80,6 +88,8 @@ public class AuthController {
             // Generate JWT token for automatic login
             String token = jwtService.generateToken(savedUser.getEmail());
 
+            log.info("User {} registered successfully", savedUser.getEmail());
+
             return ResponseEntity.ok(new AuthResponse(
                     token,
                     "Bearer",
@@ -87,6 +97,7 @@ public class AuthController {
                     "Registration successful"));
 
         } catch (Exception e) {
+            log.error("Registration failed: {}", e.getMessage());
             return ResponseEntity.badRequest()
                     .body(new ErrorResponse("Registration failed: " + e.getMessage()));
         }

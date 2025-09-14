@@ -9,6 +9,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,14 +26,16 @@ import com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.dto.coll
 import com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.dto.collection.UpdateCollectionItemRequest;
 import com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.dto.collection.UserCollectionResponse;
 import com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.dto.pokemon.TCGdexCard;
+import com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.entity.User;
 import com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.entity.UserCollection;
+import com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.entity.UserDetailsImpl;
 import com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.service.PokemonApiService;
 import com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.service.UserCollectionService;
 
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/users/{userId}/collection")
+@RequestMapping("/api/collection")
 @Validated
 public class UserCollectionController {
 
@@ -45,18 +49,20 @@ public class UserCollectionController {
 
     @PostMapping
     public ResponseEntity<UserCollectionResponse> addCardToCollection(
-            @PathVariable UUID userId,
-            @RequestHeader("X-User-ID") UUID authenticatedUserId,
             @Valid @RequestBody AddToCollectionRequest request) {
 
-        ResponseEntity<UserCollectionResponse> authCheck = checkAuthorization(userId, authenticatedUserId);
-        if (authCheck != null) return authCheck;
+        User authUser = getAuthenticatedUser();
+        if (authUser == null) {
+            log.warn("Unauthorized attempt to add card to collection");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
 
-        log.info("POST /api/users/{}/collection - Adding card {}", userId, request.getCardId());
+        log.info("POST /api/collection - Adding card {} for user {}",
+                request.getCardId(), authUser.getEmail());
 
         try {
             UserCollection savedCollection = userCollectionService.addCardToCollection(
-                    userId, request.getCardId(), request.getVariant(),
+                    authUser.getUserId(), request.getCardId(), request.getVariant(),
                     request.getQuantity(), request.getCondition(), request.getNotes());
 
             TCGdexCard cardDetails = pokemonApiService.getCard(request.getCardId());
@@ -73,17 +79,18 @@ public class UserCollectionController {
     }
 
     @GetMapping
-    public ResponseEntity<List<UserCollectionResponse>> getUserCollection(
-            @PathVariable UUID userId,
-            @RequestHeader("X-User-ID") UUID authenticatedUserId) {
-        
-        ResponseEntity<List<UserCollectionResponse>> authCheck = checkAuthorization(userId, authenticatedUserId);
-        if (authCheck != null) return authCheck;
+    public ResponseEntity<List<UserCollectionResponse>> getUserCollection() {
 
-        log.info("GET /api/users/{}/collection", userId);
+        User authUser = getAuthenticatedUser();
+        if (authUser == null) {
+            log.warn("Unauthorized attempt to get user collection");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        log.info("GET /api/collection for user {}", authUser.getEmail());
 
         try {
-            List<UserCollection> collections = userCollectionService.getUserCollection(userId);
+            List<UserCollection> collections = userCollectionService.getUserCollection(authUser.getUserId());
 
             if (collections.isEmpty()) {
                 return ResponseEntity.noContent().build();
@@ -113,19 +120,20 @@ public class UserCollectionController {
 
     @PutMapping("/{collectionId}")
     public ResponseEntity<UserCollectionResponse> updateCollectionItem(
-            @PathVariable UUID userId,
             @PathVariable Long collectionId,
-            @RequestHeader("X-User-ID") UUID authenticatedUserId,
             @Valid @RequestBody UpdateCollectionItemRequest request) {
 
-        ResponseEntity<UserCollectionResponse> authCheck = checkAuthorization(userId, authenticatedUserId);
-        if (authCheck != null) return authCheck;
+        User authUser = getAuthenticatedUser();
+        if (authUser == null) {
+            log.warn("Unauthorized attempt to get user collection with ID {}", collectionId);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
 
-        log.info("PUT /api/users/{}/collection/{}", userId, collectionId);
+        log.info("PUT /api/collection/{} for user {}", collectionId, authUser.getEmail());
 
         try {
             UserCollection updatedCollection = userCollectionService.updateCollectionItem(
-                    userId, collectionId, request.getQuantity(),
+                    authUser.getUserId(), collectionId, request.getQuantity(),
                     request.getCondition(), request.getNotes());
 
             TCGdexCard cardDetails = pokemonApiService.getCard(updatedCollection.getCardId());
@@ -143,18 +151,18 @@ public class UserCollectionController {
     }
 
     @DeleteMapping("/{collectionId}")
-    public ResponseEntity<Void> removeCardFromCollection(
-            @PathVariable UUID userId,
-            @PathVariable Long collectionId,
-            @RequestHeader("X-User-ID") UUID authenticatedUserId) {
+    public ResponseEntity<Void> removeCardFromCollection(@PathVariable Long collectionId) {
 
-        ResponseEntity<Void> authCheck = checkAuthorization(userId, authenticatedUserId);
-        if (authCheck != null) return authCheck;
+        User authUser = getAuthenticatedUser();
+        if (authUser == null) {
+            log.warn("Unauthorized attempt to delete user collection with ID {}", collectionId);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
 
-        log.info("DELETE /api/users/{}/collection/{}", userId, collectionId);
+        log.info("DELETE /api/collection/{} for user {}", collectionId, authUser.getEmail());
 
         try {
-            userCollectionService.removeCardFromCollection(userId, collectionId);
+            userCollectionService.removeCardFromCollection(authUser.getUserId(), collectionId);
             return ResponseEntity.noContent().build();
 
         } catch (IllegalArgumentException e) {
@@ -167,17 +175,19 @@ public class UserCollectionController {
     }
 
     @GetMapping("/stats")
-    public ResponseEntity<UserCollectionService.CollectionStats> getCollectionStats(
-            @PathVariable UUID userId,
-            @RequestHeader("X-User-ID") UUID authenticatedUserId) {
-        
-        ResponseEntity<UserCollectionService.CollectionStats> authCheck = checkAuthorization(userId, authenticatedUserId);
-        if (authCheck != null) return authCheck;
+    public ResponseEntity<UserCollectionService.CollectionStats> getCollectionStats() {
 
-        log.info("GET /api/users/{}/collection/stats", userId);
+        User authUser = getAuthenticatedUser();
+        if (authUser == null) {
+            log.warn("Unauthorized attempt to get collection stats");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        log.info("GET /api/collection/stats for user {}", authUser.getEmail());
 
         try {
-            UserCollectionService.CollectionStats stats = userCollectionService.getCollectionStats(userId);
+            UserCollectionService.CollectionStats stats = userCollectionService
+                    .getCollectionStats(authUser.getUserId());
             return ResponseEntity.ok(stats);
 
         } catch (IllegalArgumentException e) {
@@ -189,14 +199,27 @@ public class UserCollectionController {
         }
     }
 
-    // Authorization helper method
-    @SuppressWarnings("unchecked")
-    private <T> ResponseEntity<T> checkAuthorization(UUID requestedUserId, UUID authenticatedUserId) {
-        if (!requestedUserId.equals(authenticatedUserId)) {
-            log.warn("User {} attempted to access collection of user {}", authenticatedUserId, requestedUserId);
-            return (ResponseEntity<T>) ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    /**
+     * Helper method to get the authenticated user from JWT token
+     * 
+     * @return User object if authenticated, null if not
+     */
+    private User getAuthenticatedUser() {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+            if (authentication != null && authentication.isAuthenticated() &&
+                    authentication.getPrincipal() instanceof UserDetailsImpl) {
+
+                UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+                return userDetails.getUser();
+            }
+
+            return null;
+        } catch (Exception e) {
+            log.error("Error getting authenticated user", e);
+            return null;
         }
-        return null; // Authorization passed
     }
 
     private UserCollectionResponse mapToResponse(UserCollection collection, TCGdexCard cardDetails) {
