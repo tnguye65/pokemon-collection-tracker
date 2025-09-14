@@ -1,4 +1,5 @@
 package com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.service;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -21,13 +22,13 @@ public class PokemonApiService {
 
     private final RestTemplate restTemplate;
     private final TCGdexApiProperties apiProperties;
-    
+
     @Autowired
     public PokemonApiService(RestTemplate restTemplate, TCGdexApiProperties apiProperties) {
         this.restTemplate = restTemplate;
         this.apiProperties = apiProperties;
     }
-    
+
     public List<TCGdexCardBrief> searchCards(String name) {
         if (name == null || name.trim().isEmpty()) {
             logger.warn("Search attempted with empty or null name");
@@ -36,7 +37,7 @@ public class PokemonApiService {
         try {
             String url = apiProperties.getBaseUrl() + "/cards?name=" + name;
             logger.info("Searching cards with URL: {}", url);
-            
+
             TCGdexCardBrief[] cardsArray = restTemplate.getForObject(url, TCGdexCardBrief[].class);
             if (cardsArray == null || cardsArray.length == 0) {
                 logger.info("No cards found for name: {}", name);
@@ -52,7 +53,7 @@ public class PokemonApiService {
             throw e;
         }
     }
-    
+
     public TCGdexCard getCard(String cardId) {
         if (cardId == null || cardId.trim().isEmpty()) {
             logger.warn("Search attempted with empty or null name");
@@ -61,7 +62,7 @@ public class PokemonApiService {
         try {
             String url = apiProperties.getBaseUrl() + "/cards/" + cardId.trim();
             logger.info("Fetching card with URL: {}", url);
-            
+
             TCGdexCard card = restTemplate.getForObject(url, TCGdexCard.class);
             if (card == null) {
                 logger.info("No card found for ID: {}", cardId);
@@ -76,5 +77,5 @@ public class PokemonApiService {
             throw e;
         }
     }
-    
+
 }

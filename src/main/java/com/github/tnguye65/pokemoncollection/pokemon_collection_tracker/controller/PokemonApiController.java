@@ -15,18 +15,18 @@ import com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.dto.poke
 import com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.service.PokemonApiService;
 
 @RestController
-@RequestMapping("/api/cards")
-public class CardController {
+@RequestMapping("/api/pokemon")
+public class PokemonApiController {
 
     private final PokemonApiService pokemonApiService;
 
     @Autowired
-    public CardController(PokemonApiService pokemonApiService) {
+    public PokemonApiController(PokemonApiService pokemonApiService) {
         this.pokemonApiService = pokemonApiService;
     }
 
     // Test endpoint - search cards by name
-    @GetMapping("/search")
+    @GetMapping("/cards/search")
     public ResponseEntity<List<TCGdexCardBrief>> searchCards(@RequestParam String name) {
         try {
             List<TCGdexCardBrief> response = pokemonApiService.searchCards(name);
@@ -37,7 +37,7 @@ public class CardController {
     }
 
     // Test endpoint - get specific card
-    @GetMapping("/{cardId}")
+    @GetMapping("/cards/{cardId}")
     public ResponseEntity<TCGdexCard> getCard(@PathVariable String cardId) {
         try {
             TCGdexCard card = pokemonApiService.getCard(cardId);
