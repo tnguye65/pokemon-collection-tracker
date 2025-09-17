@@ -1,2 +1,35 @@
-/mvnw text eol=lf
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Shell scripts should always use LF (Unix-style)
+*.sh text eol=lf
+mvnw text eol=lf
+
+# Windows batch files should use CRLF
+*.bat text eol=crlf
 *.cmd text eol=crlf
+
+# But make an exception for Maven wrapper cmd file to use CRLF (as intended)
+mvnw.cmd text eol=crlf
+
+# Java and config files
+*.java text diff=java
+*.xml text
+*.properties text
+*.yml text
+*.yaml text
+*.json text
+*.md text
+*.txt text
+
+# Binary files
+*.jar binary
+*.war binary
+*.ear binary
+*.class binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary

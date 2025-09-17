@@ -1,4 +1,4 @@
-package com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.config;
+package com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.security.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;

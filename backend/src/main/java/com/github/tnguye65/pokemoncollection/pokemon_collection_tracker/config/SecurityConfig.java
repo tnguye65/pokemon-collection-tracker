@@ -14,6 +14,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.security.jwt.JwtAuthenticationFilter;
+import com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.security.service.MyUserDetailsService;
+
 import lombok.RequiredArgsConstructor;
 
 @Configuration

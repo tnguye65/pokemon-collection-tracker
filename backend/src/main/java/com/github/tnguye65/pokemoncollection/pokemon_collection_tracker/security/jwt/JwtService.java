@@ -1,10 +1,4 @@
-package com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.config;
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Service;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+package com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.security.jwt;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -15,6 +9,12 @@ import java.util.function.Function;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Service;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;

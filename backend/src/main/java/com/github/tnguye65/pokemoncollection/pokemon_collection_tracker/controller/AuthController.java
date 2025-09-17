@@ -14,11 +14,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.config.JwtAuthenticationFilter;
-import com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.config.JwtService;
 import com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.entity.User;
 import com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.entity.UserDetailsImpl;
 import com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.repository.UserRepository;
+import com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.security.jwt.JwtService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
