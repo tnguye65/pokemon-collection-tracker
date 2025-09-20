@@ -16,6 +16,7 @@ import com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.security
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -36,19 +37,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         log.info("Processing request: {} {}", request.getMethod(), request.getRequestURI());
 
-        final String authHeader = request.getHeader("Authorization");
-        log.info("Authorization header: {}", authHeader != null ? "Bearer ***" : "null");
+        // Look for JWT in cookies instead of Authorization header
+        String jwt = null;
+        
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("jwt".equals(cookie.getName())) {
+                    jwt = cookie.getValue();
+                    break;
+                }
+            }
+        }
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            log.info("No valid Bearer token found, continuing without authentication");
+        if (jwt == null) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        try {
-            final String jwt = authHeader.substring(7);
-            log.info("Extracted JWT token (length: {})", jwt.length());
+        log.info("Extracted JWT token (length: {})", jwt.length());
 
+        try {
             final String userEmail = jwtService.extractUsername(jwt);
             log.info("Extracted username from token: {}", userEmail);
 
