@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useAuth } from '../../hooks/useAuth'
+import { useAuth } from '../../features/auth/hooks/useAuth'
 
 function UserProfile() {
     const [loading, setLoading] = useState(false)

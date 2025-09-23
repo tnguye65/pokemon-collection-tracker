@@ -137,7 +137,6 @@ public class AuthController {
         return ResponseEntity.ok(responseBody);
     }
 
-    // Add this to your AuthController
     @GetMapping("/csrf-token")
     public ResponseEntity<Map<String, String>> getCsrfToken(CsrfToken csrfToken) {
         Map<String, String> response = new HashMap<>();

@@ -1,5 +1,5 @@
-import { AuthProvider } from '../contexts/AuthContext'
-import { useAuth } from '../hooks/useAuth'
+import { AuthProvider } from '../features/auth/contexts/AuthContext'
+import { useAuth } from '../features/auth/hooks/useAuth'
 import LoginForm from '../components/forms/LoginForm'
 import UserProfile from '../components/forms/UserProfile'
 
