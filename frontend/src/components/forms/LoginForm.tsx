@@ -1,10 +1,13 @@
 import { useState } from 'react'
+import { useAuth } from '../../hooks/useAuth'
 
 function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState('')
+
+  const { login } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -17,7 +20,8 @@ function LoginForm() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password }),
+        credentials: 'include'
       })
 
       const data = await response.json()
@@ -25,8 +29,8 @@ function LoginForm() {
       if (response.ok) {
         // Success! This matches your AuthResponse DTO
         setMessage(`Login successful! Welcome ${data.username}`)
-        console.log('JWT Token:', data.token)
-        // TODO: Store the token for future requests
+        console.log('Login Response:', data)
+        login({ username: data.username, email: data.email })
       } else {
         // Error from your backend
         setMessage(data.message || 'Login failed')

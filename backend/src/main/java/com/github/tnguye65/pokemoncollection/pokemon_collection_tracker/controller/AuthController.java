@@ -5,11 +5,13 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.csrf.CsrfToken;
@@ -20,6 +22,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.dto.auth.AuthResponse;
+import com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.dto.auth.ErrorResponse;
+import com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.dto.auth.LoginRequest;
+import com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.dto.auth.RegisterRequest;
 import com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.entity.User;
 import com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.repository.UserRepository;
 import com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.security.jwt.JwtService;
@@ -141,118 +147,39 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    // DTO Classes
-    public static class LoginRequest {
-        private String email;
-        private String password;
+    @GetMapping("/me")
+    public ResponseEntity<AuthResponse> getCurrentUser() {
+        AuthResponse response = new AuthResponse();
+        try {
+            // Get the currently authenticated user from Spring Security context
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            
+            if (authentication == null || !authentication.isAuthenticated() || 
+                authentication.getPrincipal().equals("anonymousUser")) {
 
-        // Constructors
-        public LoginRequest() {
-        }
+                response.setMessage("No authenticated user found");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            }
 
-        public LoginRequest(String email, String password) {
-            this.email = email;
-            this.password = password;
-        }
+            // Cast to UserDetails (your MyUserDetailsService implementation)
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            String email = userDetails.getUsername(); // In your case, username is the email
 
-        // Getters and Setters
-        public String getEmail() {
-            return email;
-        }
+            // Fetch full user info from database
+            User user = userService.findByEmail(email).get();
 
-        public void setEmail(String email) {
-            this.email = email;
-        }
+            response.setUsername(user.getUsername());
+            response.setEmail(user.getEmail());
+            response.setMessage("Current user retrieved successfully");
 
-        public String getPassword() {
-            return password;
-        }
+            // Return user info
+            return ResponseEntity.ok(response);
 
-        public void setPassword(String password) {
-            this.password = password;
-        }
-    }
-
-    public static class RegisterRequest {
-        private String email;
-        private String password;
-
-        // Constructors
-        public RegisterRequest() {
-        }
-
-        public RegisterRequest(String email, String password) {
-            this.email = email;
-            this.password = password;
-        }
-
-        // Getters and Setters
-        public String getEmail() {
-            return email;
-        }
-
-        public void setEmail(String email) {
-            this.email = email;
-        }
-
-        public String getPassword() {
-            return password;
-        }
-
-        public void setPassword(String password) {
-            this.password = password;
-        }
-    }
-
-    public static class AuthResponse {
-        private String username;
-        private String email;
-        private String message;
-
-        public AuthResponse(String username, String email, String message) {
-            this.username = username;
-            this.email = email;
-            this.message = message;
-        }
-
-        public String getUsername() {
-            return username;
-        }
-
-        public void setUsername(String username) {
-            this.username = username;
-        }
-
-        public String getEmail() {
-            return email;
-        }
-
-        public void setEmail(String email) {
-            this.email = email;
-        }
-
-        public String getMessage() {
-            return message;
-        }
-
-        public void setMessage(String message) {
-            this.message = message;
-        }
-    }
-
-    public static class ErrorResponse {
-        private String error;
-
-        public ErrorResponse(String error) {
-            this.error = error;
-        }
-
-        public String getError() {
-            return error;
-        }
-
-        public void setError(String error) {
-            this.error = error;
+        } catch (Exception e) {
+            response.setUsername("");
+            response.setEmail("");
+            response.setMessage("Authentication failed");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
     }
 }
