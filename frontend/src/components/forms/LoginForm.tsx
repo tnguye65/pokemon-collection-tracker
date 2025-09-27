@@ -25,6 +25,7 @@ function LoginForm() {
       })
 
       const data = await response.json()
+      await login(data);
 
       if (response.ok) {
         // Success! This matches your AuthResponse DTO

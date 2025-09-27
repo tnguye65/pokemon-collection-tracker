@@ -6,6 +6,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -14,7 +15,6 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,7 +32,6 @@ import com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.security
 import com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.security.service.MyUserDetailsService;
 import com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.service.UserService;
 
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -68,12 +67,14 @@ public class AuthController {
             String jwt = jwtService.generateToken(userDetails);
 
             // Set JWT as HttpOnly cookie
-            Cookie jwtCookie = new Cookie("jwt", jwt);
-            jwtCookie.setHttpOnly(true);    // Prevents JavaScript access
-            jwtCookie.setSecure(false);     // Set to true in production with HTTPS
-            jwtCookie.setPath("/");         // Available for all paths
-            jwtCookie.setMaxAge(24 * 60 * 60); // 24 hours
-            response.addCookie(jwtCookie);
+            ResponseCookie jwtCookie = ResponseCookie.from("jwt", jwt)
+                    .httpOnly(true)    // Prevents JavaScript access
+                    .secure(false)     // Set to true in production with HTTPS
+                    .sameSite("Lax") // Adjust based on your needs (Lax, Strict, None)  
+                    .path("/")         // Available for all paths
+                    .maxAge(24 * 60 * 60) // 24 hours
+                    .build();
+            response.addHeader("Set-Cookie", jwtCookie.toString());
 
             log.info("User {} logged in successfully", userDetails.getUsername());
 
@@ -126,24 +127,17 @@ public class AuthController {
     @PostMapping("/logout")
     public ResponseEntity<Map<String, String>> logout(HttpServletResponse response) {
         // Clear the JWT cookie
-        Cookie jwtCookie = new Cookie("jwt", null);
-        jwtCookie.setHttpOnly(true);
-        jwtCookie.setPath("/");
-        jwtCookie.setMaxAge(0); // Expire immediately
-        response.addCookie(jwtCookie);
-
+        ResponseCookie jwtCookie = ResponseCookie.from("jwt", "")
+                .httpOnly(true)
+                .secure(false)
+                .sameSite("Lax")
+                .path("/")
+                .maxAge(0) // Expire immediately
+                .build();
+        response.addHeader("Set-Cookie", jwtCookie.toString());
         Map<String, String> responseBody = new HashMap<>();
         responseBody.put("message", "Logged out successfully");
         return ResponseEntity.ok(responseBody);
-    }
-
-    @GetMapping("/csrf-token")
-    public ResponseEntity<Map<String, String>> getCsrfToken(CsrfToken csrfToken) {
-        Map<String, String> response = new HashMap<>();
-        response.put("token", csrfToken.getToken());
-        response.put("headerName", csrfToken.getHeaderName());
-        response.put("parameterName", csrfToken.getParameterName());
-        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/me")

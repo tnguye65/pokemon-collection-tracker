@@ -1,10 +1,16 @@
+import React from 'react'
 import { AuthProvider } from '../features/auth/contexts/AuthContext'
 import { useAuth } from '../features/auth/hooks/useAuth'
+import PokemonSearch from '../features/pokemon/components/PokemonSearch'
 import LoginForm from '../components/forms/LoginForm'
 import UserProfile from '../components/forms/UserProfile'
 
+type ActiveTab = 'profile' | 'search';
+
+
 function AppContent() {
   const { user, isLoading } = useAuth()
+  const [activeTab, setActiveTab] = React.useState<ActiveTab>('profile')
 
   if (isLoading) {
     return (
@@ -27,10 +33,43 @@ function AppContent() {
           )}
         </div>
       </header>
+
+      {/* Navigation Tabs - Only show when logged in */}
+      {user && (
+        <nav className="bg-white shadow-sm border-b">
+          <div className="container mx-auto">
+            <div className="flex space-x-8">
+              <button
+                onClick={() => setActiveTab('profile')}
+                className={`py-4 px-2 border-b-2 font-medium text-sm ${
+                  activeTab === 'profile'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Profile
+              </button>
+              <button
+                onClick={() => setActiveTab('search')}
+                className={`py-4 px-2 border-b-2 font-medium text-sm ${
+                  activeTab === 'search'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Search Cards
+              </button>
+            </div>
+          </div>
+        </nav>
+      )}
       
       <main className="container mx-auto p-4">
         {user ? (
-          <UserProfile />
+          <>
+            {activeTab === 'profile' && <UserProfile />}
+            {activeTab === 'search' && <PokemonSearch />}
+          </>
         ) : (
           <LoginForm />
         )}

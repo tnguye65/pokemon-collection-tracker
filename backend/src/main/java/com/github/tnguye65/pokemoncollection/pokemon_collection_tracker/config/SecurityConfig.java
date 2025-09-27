@@ -13,7 +13,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -35,12 +34,9 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Enable CORS
-                .csrf(csrf -> csrf
-                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                        .ignoringRequestMatchers("/api/auth/login", "/api/auth/register") // Initial auth doesn't need CSRF
-                        .ignoringRequestMatchers("/api/pokemon/**") // Public read-only endpoints
-                        .ignoringRequestMatchers("/h2-console/**") // H2 console
-                )
+                .csrf(csrf -> csrf.disable()) // Disable CSRF for simplicity in this example
+                // Allow frames for H2 console
+                .headers(headers -> headers.frameOptions().sameOrigin()) // ONLY for H2 console, remove in production
                 .authorizeHttpRequests(authz -> authz
                         // Public endpoints - no authentication required
                         .requestMatchers("/api/auth/**").permitAll() // Login, register endpoints
