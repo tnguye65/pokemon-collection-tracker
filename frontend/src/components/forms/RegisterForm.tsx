@@ -1,13 +1,14 @@
 import { useState } from 'react'
-import { useAuth } from '../../features/auth/hooks/useAuth'
 
-function LoginForm() {
+interface RegisterFormProps {
+  onSuccessfulRegister: () => void;
+}
+    
+function RegisterForm({ onSuccessfulRegister }: RegisterFormProps) {
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [password, setPassword] = useState('')  // Will add password confirmation later
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState('')
-
-  const { login } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -15,7 +16,7 @@ function LoginForm() {
     setMessage('')
 
     try {
-      const response = await fetch('http://localhost:8080/api/auth/login', {
+      const response = await fetch('http://localhost:8080/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -28,16 +29,16 @@ function LoginForm() {
 
       if (response.ok) {
         // Success! This matches your AuthResponse DTO
-        setMessage(`Login successful! Welcome ${data.username}`)
-        console.log('Login Response:', data)
-        login({ username: data.username, email: data.email })
+        setMessage(`Registration successful! Redirecting to login...`)
+        console.log('Registration Response:', data)
+        onSuccessfulRegister()
       } else {
         // Error from your backend
-        setMessage(data.message || 'Login failed')
+        setMessage(data.message || 'Registration failed')
       }
     } catch (error) {
       setMessage('Network error - is your backend running?')
-      console.error('Login error:', error)
+      console.error('Registration error:', error)
     } finally {
       setIsLoading(false)
     }
@@ -45,7 +46,7 @@ function LoginForm() {
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md max-w-md mx-auto">
-      <h2 className="text-xl font-bold mb-4">Login</h2>
+      <h2 className="text-xl font-bold mb-4">Register</h2>
       
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
@@ -77,7 +78,7 @@ function LoginForm() {
           disabled={isLoading}
           className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 disabled:bg-gray-400"
         >
-          {isLoading ? 'Logging in...' : 'Login'}
+          {isLoading ? 'Registering...' : 'Register'}
         </button>
 
         {message && (
@@ -92,4 +93,4 @@ function LoginForm() {
   )
 }
 
-export default LoginForm
+export default RegisterForm

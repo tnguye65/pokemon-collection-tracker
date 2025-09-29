@@ -19,4 +19,29 @@ interface PokemonCard extends PokemonCardBrief {
   // Only add fields as you need them in your UI
 }
 
-export type { PokemonCardBrief, PokemonCard }
+interface UserCollectionItem {
+    id: number;
+    cardId: string;
+    quantity: number;
+    condition: string;
+    variant: string;
+    notes: string | null;
+    addedDate: string;
+    updatedDate: string;
+    cardDetails: {
+        id: string;
+        name: string;
+        thumbnailImageUrl: string;
+        highQualityImageUrl: string;
+        set: {
+            id: string;
+            name: string;
+        };
+        hp?: number;
+        types: string[];
+        rarity: string;
+        // Add other properties as needed
+    };
+}
+
+export type { PokemonCardBrief, PokemonCard, UserCollectionItem }

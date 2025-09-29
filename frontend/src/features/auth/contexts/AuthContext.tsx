@@ -9,26 +9,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  const generateCsrfTokenHeaders = async () : Promise<HeadersInit> => {
-    const headers: HeadersInit = {
-        'Content-Type': 'application/json'
-    };
-    try {
-      const csrfResponse = await fetch('http://localhost:8080/api/auth/csrf-token', {
-        credentials: 'include'
-      })
-
-      if (csrfResponse.ok) {
-        const csrfData = await csrfResponse.json();
-        headers[csrfData.headerName] = csrfData.token;
-      }
-      
-    } catch (error) {
-      console.warn('Error generating CSRF token:', error);
-    }
-    return headers
-  };
-
   const checkAuthStatus = async () => {
     try {
       const response = await fetch('http://localhost:8080/api/auth/me', {
@@ -48,16 +28,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const login = async (userData: User) => {
     setUser(userData);
-    await generateCsrfTokenHeaders();
-    console.log('Login completed, CSRF token should be available');
   }
 
   const logout = async () : Promise<void> => {
     try {
-      const headers = await generateCsrfTokenHeaders();
       const response = await fetch('http://localhost:8080/api/auth/logout', {
         method: 'POST',
-        headers,
         credentials: 'include'
       });
 
@@ -74,10 +50,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }
 
-  const refreshCsrfToken = async (): Promise<void> => {
-    await generateCsrfTokenHeaders();
-  };
-
   useEffect(() => {
     checkAuthStatus()
   }, [])
@@ -87,7 +59,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     isLoading,
     login,
     logout,
-    refreshCsrfToken
   };
 
   return (
@@ -96,3 +67,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     </AuthContext.Provider>
   );
 }
+
+/**
+ * How It Works in Practice
+App startup: Automatically checks if user is logged in
+Any component can use useAuth() to access:
+user - current user info or null
+isLoading - whether auth check is in progress
+login() - function to set user after successful login
+logout() - function to log user out
+This pattern lets you easily protect routes, show/hide UI elements, and manage authentication state without prop drilling!
+ */

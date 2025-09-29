@@ -1,17 +1,33 @@
 // src/components/WelcomeToggle.tsx
-interface WelcomeToggleProps {
-  showWelcome: boolean
-  onToggle: () => void
-}
+import { useState } from 'react'
+import LoginForm from './forms/LoginForm'
+import RegisterForm from './forms/RegisterForm'
 
-function WelcomeToggle({ showWelcome, onToggle }: WelcomeToggleProps) {
+function WelcomeToggle() {
+  const [showRegister, setShowRegister] = useState(false)
+
   return (
-    <button 
-      className="bg-blue-500 text-white px-4 py-2 rounded"
-      onClick={onToggle}
-    >
-      {showWelcome ? 'Hide Welcome' : 'Show Welcome'}
-    </button>
+    <div className="max-w-4xl mx-auto p-6 flex flex-col items-center">
+      <div className="w-full max-w-md">
+        {showRegister ? (
+          <RegisterForm onSuccessfulRegister={() => setShowRegister(false)} />
+        ) : (
+          <LoginForm />
+        )}
+
+        <div className="text-center mt-4">
+          <button
+            onClick={() => setShowRegister(!showRegister)}
+            className="text-blue-500 hover:text-blue-700 underline"
+          >
+            {showRegister 
+              ? 'Already have an account? Sign in' 
+              : "Don't have an account? Sign up"
+            }
+          </button>
+        </div>
+      </div>
+    </div>
   )
 }
 

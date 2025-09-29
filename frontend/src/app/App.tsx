@@ -2,8 +2,8 @@ import React from 'react'
 import { AuthProvider } from '../features/auth/contexts/AuthContext'
 import { useAuth } from '../features/auth/hooks/useAuth'
 import PokemonSearch from '../features/pokemon/components/PokemonSearch'
-import LoginForm from '../components/forms/LoginForm'
 import UserProfile from '../components/forms/UserProfile'
+import WelcomeToggle from '../components/WelcomeToggle'
 
 type ActiveTab = 'profile' | 'search';
 
@@ -71,7 +71,7 @@ function AppContent() {
             {activeTab === 'search' && <PokemonSearch />}
           </>
         ) : (
-          <LoginForm />
+          <WelcomeToggle />
         )}
       </main>
     </div>
