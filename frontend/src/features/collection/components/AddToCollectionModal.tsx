@@ -16,9 +16,9 @@ const AddToCollectionModal: React.FC<AddToCollectionModalProps> = ({
   onClose,
   loading
 }) => {
-  const [variant, setVariant] = useState<CardVariant>('normal');
+  const [variant, setVariant] = useState<CardVariant>('Normal');
   const [quantity, setQuantity] = useState(1);
-  const [condition, setCondition] = useState<CardCondition>('near_mint');
+  const [condition, setCondition] = useState<CardCondition>('Near Mint');
   const [notes, setNotes] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {

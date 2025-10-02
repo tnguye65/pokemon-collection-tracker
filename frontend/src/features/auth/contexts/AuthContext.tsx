@@ -1,13 +1,15 @@
 import { useState, useEffect, type ReactNode } from 'react'
 import { AuthContext, type AuthContextType, type User } from './auth-context'
+import { useNavigate } from 'react-router-dom';
 
 interface AuthProviderProps {
   children: ReactNode
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [user, setUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
 
   const checkAuthStatus = async () => {
     try {
@@ -28,6 +30,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const login = async (userData: User) => {
     setUser(userData);
+    navigate('/search');
   }
 
   const logout = async () : Promise<void> => {

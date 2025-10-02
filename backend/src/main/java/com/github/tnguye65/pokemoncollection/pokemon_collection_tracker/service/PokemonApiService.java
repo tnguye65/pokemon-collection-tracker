@@ -72,8 +72,22 @@ public class PokemonApiService {
             logger.info("Found card: {} for ID: {}", card.getName(), cardId);
             return card;
 
-        } catch (RestClientException e) {
+        } 
+        
+        catch (RestClientException e) {
             logger.error("Error occurred while fetching card with ID '{}': {}", cardId, e.getMessage());
+
+            Throwable cause = e.getMostSpecificCause();
+            if (cause instanceof com.fasterxml.jackson.databind.JsonMappingException jme) {
+                logger.error("Deserialization error details: {} at path: {}", jme.getOriginalMessage(), jme.getPathReference());
+            }
+            
+            // Check if it's a deserialization error
+            if (e.getMessage().contains("extracting response")) {
+                logger.warn("Deserialization failed for card ID '{}'. The API response structure may not match our DTO.", cardId);
+                // You could try to fetch as a generic Map or JsonNode to see the actual structure
+            }
+            
             throw e;
         }
     }

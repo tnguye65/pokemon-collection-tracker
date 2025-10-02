@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../features/auth/hooks/useAuth'
 
 function LoginForm() {
@@ -88,6 +89,15 @@ function LoginForm() {
           </div>
         )}
       </form>
+
+      <p className="mt-4 text-center text-sm text-gray-600">
+        <Link
+          to="/register"
+          className="font-medium text-blue-600 hover:text-blue-500"
+        >
+          Don't have an account? Register here!
+        </Link>
+      </p>
     </div>
   )
 }

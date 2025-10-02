@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
 import { type PokemonCardBrief } from '../types/PokemonTypes';
-import type { AddToCollectionRequest } from '../../collection/types/CollectionTypes';
+import type { AddToCollectionRequest, UserCollection } from '../../collection/types/CollectionTypes';
 import AddToCollectionModal from '../../collection/components/AddToCollectionModal';
 
-const PokemonSearch: React.FC = () => {
+interface PokemonSearchProps {
+  onAddToCollection?: (newItem: UserCollection) => void; // Make it optional for flexibility
+}
+
+const PokemonSearch: React.FC<PokemonSearchProps> = ({ onAddToCollection }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [cards, setCards] = useState<PokemonCardBrief[]>([]);
   const [loading, setLoading] = useState(false);
@@ -78,10 +82,18 @@ const PokemonSearch: React.FC = () => {
         throw new Error('Failed to add card to collection');
       }
 
+      const newItem: UserCollection = await response.json();
+
       // Success! Close modal and show success message
       setShowAddModal(false);
       setSelectedCard(null);
-      alert(`${selectedCard?.name} added to your collection!`); // You can replace with a toast later
+      
+      // Call the callback if provided (for when used in CollectionPage modal)
+      if (onAddToCollection) {
+        onAddToCollection(newItem);
+      } else {
+        alert(`${selectedCard?.name} added to your collection!`);
+      }
       
     } catch (err) {
       console.error('Error adding card to collection:', err);

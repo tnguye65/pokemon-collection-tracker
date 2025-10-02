@@ -1,17 +1,47 @@
 package com.github.tnguye65.pokemoncollection.pokemon_collection_tracker.dto.pokemon;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-@Data
-@NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TCGdexCardBrief {
     private String id;
     private String localId;
     private String name;
     private String image;
+
+    public TCGdexCardBrief() {
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getLocalId() {
+        return localId;
+    }
+
+    public void setLocalId(String localId) {
+        this.localId = localId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
 
     /**
      * Get high quality image URL for display

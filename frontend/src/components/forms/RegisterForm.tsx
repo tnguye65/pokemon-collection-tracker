@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom';
 
 interface RegisterFormProps {
   onSuccessfulRegister: () => void;
@@ -30,7 +31,9 @@ function RegisterForm({ onSuccessfulRegister }: RegisterFormProps) {
       if (response.ok) {
         // Success! This matches your AuthResponse DTO
         setMessage(`Registration successful! Redirecting to login...`)
+        alert("Registration successful! Redirecting to login...")
         console.log('Registration Response:', data)
+        console.log('Message:', message)
         onSuccessfulRegister()
       } else {
         // Error from your backend
@@ -81,14 +84,23 @@ function RegisterForm({ onSuccessfulRegister }: RegisterFormProps) {
           {isLoading ? 'Registering...' : 'Register'}
         </button>
 
-        {message && (
+        {/* {message && (
           <div className={`mt-4 p-2 rounded ${
             message.includes('successful') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
           }`}>
             {message}
           </div>
-        )}
+        )} */}
       </form>
+      
+      <p className="mt-4 text-center text-sm text-gray-600">
+            <Link
+                to="/login"
+                className="font-medium text-blue-600 hover:text-blue-500"
+            >
+            Already have an account? Login here!
+            </Link>
+        </p>
     </div>
   )
 }
